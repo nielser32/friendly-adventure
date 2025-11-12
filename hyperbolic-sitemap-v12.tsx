@@ -323,10 +323,13 @@ const HyperbolicSitemap: React.FC = () => {
     };
   }, [dimensions, graphData, activeCategory]);
 
-  const filteredNodes = graphData.nodes.filter(node =>
-    node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    node.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredNodes = graphData.nodes.filter(node => {
+    const matchesSearch =
+      node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      node.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !activeCategory || node.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -412,6 +415,7 @@ const HyperbolicSitemap: React.FC = () => {
                   <button
                     key={node.id}
                     onClick={() => {
+                      setActiveCategory(node.category || null);
                       setCenterNode(node.id);
                       setSelectedNode(node);
                       setSearchTerm('');
