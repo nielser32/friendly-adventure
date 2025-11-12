@@ -33,6 +33,17 @@ const HyperbolicSitemap: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
 
+  const centerNodeRef = useRef(centerNode);
+  const zoomLevelRef = useRef(zoomLevel);
+
+  useEffect(() => {
+    centerNodeRef.current = centerNode;
+  }, [centerNode]);
+
+  useEffect(() => {
+    zoomLevelRef.current = zoomLevel;
+  }, [zoomLevel]);
+
   const graphData = useMemo(() => {
     const nodes: Node[] = [
       { id: 'home', label: 'Home', category: 'main', description: 'Welcome to our platform', size: 35 },
@@ -95,15 +106,16 @@ const HyperbolicSitemap: React.FC = () => {
   };
 
   const hyperbolicTransform = (x: number, y: number, centerX: number, centerY: number) => {
+    const currentZoom = zoomLevelRef.current;
     const dx = x - centerX;
     const dy = y - centerY;
     const d = Math.sqrt(dx * dx + dy * dy);
     const maxD = Math.min(dimensions.width, dimensions.height) / 2;
-    
-    if (d === 0) return { x: centerX, y: centerY, scale: 2.2 * zoomLevel };
-    
-    const r = Math.tanh(d / maxD * 2.5 / zoomLevel) * maxD * 0.95;
-    const scale = Math.max(0.2, (2.2 - (d / maxD) * 2) * zoomLevel);
+
+    if (d === 0) return { x: centerX, y: centerY, scale: 2.2 * currentZoom };
+
+    const r = Math.tanh(d / maxD * 2.5 / currentZoom) * maxD * 0.95;
+    const scale = Math.max(0.2, (2.2 - (d / maxD) * 2) * currentZoom);
     
     return {
       x: centerX + (dx / d) * r,
@@ -257,7 +269,8 @@ const HyperbolicSitemap: React.FC = () => {
     nodeGroup.call(drag as any);
 
     simulation.on('tick', () => {
-      const center = filteredGraphData.nodes.find(n => n.id === centerNode);
+      const currentCenterId = centerNodeRef.current;
+      const center = filteredGraphData.nodes.find(n => n.id === currentCenterId);
       const focusX = center?.x || centerX;
       const focusY = center?.y || centerY;
 
@@ -308,7 +321,7 @@ const HyperbolicSitemap: React.FC = () => {
     return () => {
       simulation.stop();
     };
-  }, [dimensions, graphData, centerNode, activeCategory, zoomLevel]);
+  }, [dimensions, graphData, activeCategory]);
 
   const filteredNodes = graphData.nodes.filter(node =>
     node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
