@@ -32,9 +32,13 @@ const HyperbolicSitemap: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
+  const [viewOffset, setViewOffset] = useState({ x: 0, y: 0 });
 
   const centerNodeRef = useRef(centerNode);
   const zoomLevelRef = useRef(zoomLevel);
+  const viewOffsetRef = useRef(viewOffset);
+  const panStartRef = useRef<{ x: number; y: number } | null>(null);
+  const panOffsetStartRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     centerNodeRef.current = centerNode;
@@ -43,6 +47,10 @@ const HyperbolicSitemap: React.FC = () => {
   useEffect(() => {
     zoomLevelRef.current = zoomLevel;
   }, [zoomLevel]);
+
+  useEffect(() => {
+    viewOffsetRef.current = viewOffset;
+  }, [viewOffset]);
 
   const graphData = useMemo(() => {
     const nodes: Node[] = [
@@ -271,8 +279,9 @@ const HyperbolicSitemap: React.FC = () => {
     simulation.on('tick', () => {
       const currentCenterId = centerNodeRef.current;
       const center = filteredGraphData.nodes.find(n => n.id === currentCenterId);
-      const focusX = center?.x || centerX;
-      const focusY = center?.y || centerY;
+      const offset = viewOffsetRef.current;
+      const focusX = (center?.x || centerX) + offset.x;
+      const focusY = (center?.y || centerY) + offset.y;
 
       link
         .attr('x1', (d: any) => {
@@ -437,6 +446,35 @@ const HyperbolicSitemap: React.FC = () => {
       <div 
         onWheel={handleWheel}
         className="w-full h-full"
+        onPointerDown={(e) => {
+          if (!(e.target instanceof SVGSVGElement)) return;
+          e.preventDefault();
+          setIsPanning(true);
+          panStartRef.current = { x: e.clientX, y: e.clientY };
+          panOffsetStartRef.current = { ...viewOffsetRef.current };
+        }}
+        onPointerMove={(e) => {
+          if (!panStartRef.current) return;
+          e.preventDefault();
+          const dx = e.clientX - panStartRef.current.x;
+          const dy = e.clientY - panStartRef.current.y;
+          setViewOffset({
+            x: panOffsetStartRef.current.x + dx,
+            y: panOffsetStartRef.current.y + dy,
+          });
+        }}
+        onPointerUp={() => {
+          setIsPanning(false);
+          panStartRef.current = null;
+        }}
+        onPointerLeave={() => {
+          setIsPanning(false);
+          panStartRef.current = null;
+        }}
+        onPointerCancel={() => {
+          setIsPanning(false);
+          panStartRef.current = null;
+        }}
       >
         <svg
           ref={svgRef}
