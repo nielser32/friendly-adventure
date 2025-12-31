@@ -17,6 +17,68 @@ Express + TypeScript service that powers the starter health endpoint and future 
 
 - `GET /health` — returns `{ service, status, timestamp, environment }` and is schema-validated with Zod.
 - `GET /` — simple metadata response indicating the API is ready.
+- `GET /nodes` — list all graph nodes.
+- `POST /nodes` — create a node with `title`, `summary`, and optional `tags`.
+- `GET /nodes/:id` — fetch a single node (UUID).
+- `PUT /nodes/:id` — update `title`, `summary`, or `tags`.
+- `DELETE /nodes/:id` — remove a node and its attached edges.
+- `GET /edges` — list all edges.
+- `POST /edges` — create an edge with `type`, `sourceId`, `targetId`, and optional `description`.
+- `GET /edges/:id` — fetch a single edge (UUID).
+- `PUT /edges/:id` — update an edge `type` or `description`.
+- `DELETE /edges/:id` — remove an edge.
+- `GET /graph/path?sourceId=...&targetId=...` — return the node path (if any) from source to target.
+- `POST /graph/traverse` — breadth-first traversal from a start node with a bounded `depth` (1–5).
+
+### Request/response examples
+
+Create a node:
+
+```bash
+curl -X POST http://localhost:4000/nodes \
+  -H "Content-Type: application/json" \
+  -d '{"title":"GraphQL","summary":"A query language","tags":["api","schema"]}'
+```
+
+Response:
+
+```json
+{
+  "id": "c489c5c5-ef49-4821-9e34-e1d2cd4d3f1e",
+  "title": "GraphQL",
+  "summary": "A query language",
+  "tags": ["api", "schema"],
+  "createdAt": "2024-01-01T12:00:00.000Z",
+  "updatedAt": "2024-01-01T12:00:00.000Z"
+}
+```
+
+Create an edge between two nodes:
+
+```bash
+curl -X POST http://localhost:4000/edges \
+  -H "Content-Type: application/json" \
+  -d '{"type":"supports","sourceId":"<nodeA>","targetId":"<nodeB>","description":"Node A supports Node B"}'
+```
+
+Graph traversal:
+
+```bash
+curl -X POST http://localhost:4000/graph/traverse \
+  -H "Content-Type: application/json" \
+  -d '{"startId":"<nodeA>","depth":2}'
+```
+
+Response:
+
+```json
+{
+  "startId": "<nodeA>",
+  "depth": 2,
+  "nodes": [{ "id": "<nodeA>", "title": "A", "summary": "Start", "tags": [], "createdAt": "...", "updatedAt": "..." }],
+  "edges": [{ "id": "<edge>", "type": "supports", "sourceId": "<nodeA>", "targetId": "<nodeB>", "createdAt": "..." }]
+}
+```
 
 ## Notes
 
