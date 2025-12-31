@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log*
+dist
+dev-dist
+.env
+.env.local
+.DS_Store
+.vscode
+coverage
+
+# lock files for other package managers (using npm workspaces here)
+yarn.lock
+pnpm-lock.yaml
