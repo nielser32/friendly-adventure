@@ -52,6 +52,10 @@ An opinionated starter workspace that pairs a React front-end (Vite + TypeScript
 - **API** (`apps/api`)
   - Express + TypeScript with middleware (`helmet`, `cors`, JSON body parsing).
   - Health endpoint uses Zod validation and is covered by Vitest + Supertest.
+- **Database** (PostgreSQL)
+  - Prisma models capture `User`, `Concept`, `Relationship`, `Tag`, and `ConceptTag` join relations to model a semantic network.
+  - Migrations live in `apps/api/prisma/migrations`; run them against Postgres with `npm --workspace apps/api run db:migrate`.
+  - Seed data creates exemplar concepts, relationships, and tags for immediate exploration.
 
 ## Next steps to explore
 
@@ -69,3 +73,26 @@ An opinionated starter workspace that pairs a React front-end (Vite + TypeScript
 - https://github.com/thedaviddias/Front-End-Performance-Checklist
 - https://github.com/thedaviddias/indie-dev-toolkit
 - https://uxpatterns.dev/
+
+## Database & local infrastructure
+
+Start Postgres locally with Docker Compose (or point `DATABASE_URL` at an existing Postgres instance):
+
+```bash
+docker compose up -d db
+```
+
+Then apply migrations and seed data from the repo root:
+
+```bash
+npm --workspace apps/api run db:migrate
+npm --workspace apps/api run db:seed
+```
+
+Schema quick view (see `apps/api/prisma/schema.prisma` for full details):
+
+- `User` — creators of concepts/relationships.
+- `Concept` — knowledge nodes with titles and summaries.
+- `Relationship` — typed links between concepts (`relates_to`, `supports`, `contradicts`, `derives_from`).
+- `Tag` — labels applied to concepts.
+- `ConceptTag` — join table between concepts and tags.
