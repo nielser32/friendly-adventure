@@ -1,4 +1,5 @@
-Leverage the following resources to maximize full-stack development quality and desirability of an interactive semantic network:
+Develop an interactive semantic network visualization web application:
+Leverage the following resources to optimize full-stack development efficacy and enhance user engagement.
 - https://www.w3schools.com/whatis/whatis_fullstack.asp
 - https://github.com/thedaviddias/Front-End-Checklist
 - https://github.com/thedaviddias/Front-End-Design-Checklist
